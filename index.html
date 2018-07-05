@@ -4,6 +4,9 @@
     <title> Gentoo is god </title>
 
 <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.css" />
+<script src="js/jquery.js"></script>
+<!--script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script-->
 <script src="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.js"></script>
 <script>
 window.addEventListener("load", function(){
@@ -19,8 +22,7 @@ window.cookieconsent.initialise({
   }
 })});
 </script>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-        crossorigin="anonymous"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
         crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB"
@@ -544,6 +546,20 @@ window.cookieconsent.initialise({
                 html: `<div class='triggered'></div>`,
                 rotation: { x: 0, y: Math.PI * -0.2, z: 0 },
                 position: { x: 500, y: 200, z: 180 }
+            },
+            { //Porninator
+                html: `<div style="background-color: black;">
+                          <div style="color: white; font-family: sans-serif; font-size: 52px; font-weight: bold; text-align: center;">PORNINATOR</span>
+                          <div>
+                            <img src="img/loading.png" id="porninator-overlay" style="position: absolute; left:0px; width: 1500px; height: 1500px; display: none; pointer-events: none;" ></img>
+                            <a id="image-link" href="img/porn.png" target="_blank"><img id="danbooru" src="img/porn.png" style="cursor: pointer; display: block; width: 1500px; height: 1500px;" onLoad="$('#porninator-overlay').hide();"></img></a>
+                          </div>
+                          <input type="text" id="tag1" placeholder="Tag 1" onClick="$('#tag1').val(prompt('Type first tag', $('#tag1').val()))">
+                          <input type="text" id="tag2" placeholder="Tag 2" onClick="$('#tag2').val(prompt('Type second tag', $('#tag2').val()))">
+                          <button type="button" onClick="getRandomDanbooru($('#danbooru'), $('#tag1').val(), $('#tag2').val(), $('#image-link'))" style="cursor: pointer;">Get porn</button>
+                      </div>`,
+                rotation: { x: 0, y: 10, z: 0 },
+                position: { x: 900, y: 200, z: 2700 }
             }
         ]
 
@@ -580,6 +596,26 @@ window.cookieconsent.initialise({
         function beato() {
             ahaha.play();
         }
+
+        //get random URL for a Danbooru image with chosen tags, set it as the src attribute of passed element,
+        //and set it as href attribute of passed <a></a> element. also manages loading and error screen.
+        //i couldnt find a way to have a function that just returns the link itself, i wish i had fucking pointers
+        function getRandomDanbooru(element, tag1, tag2, aTag) {
+            tag1 = tag1.replace(/ /g, "_");
+            tag2 = tag2.replace(/ /g, "_");
+            function setImageLink(element, link) {element.attr("src", link);}
+            function setPostLink(element, postId) {element.attr("href", "https://danbooru.donmai.us/posts/" + postId);}
+
+            setImageLink($("#porninator-overlay"), "img/loading.png");
+            $("#porninator-overlay").show();
+            var response = $.getJSON('https://danbooru.donmai.us/posts/random.json?tags=' + tag1 + '+' + tag2, function() {
+                  var link = response.responseJSON.file_url;
+                  var postId = response.responseJSON.id;
+                  setImageLink(element, link);
+                  if (aTag !== undefined) {setPostLink(aTag, postId);}
+            }).fail(function() {setImageLink($("#porninator-overlay"), "img/error.png");});
+        }
+
         function init() {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
